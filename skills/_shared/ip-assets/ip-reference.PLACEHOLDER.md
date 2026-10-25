@@ -1,15 +1,10 @@
-# 尚无正式 IP 参考图
+# 参考图状态
 
-本目录还没有 `ip-reference.jpg` 或 `ip-reference.png`。
+已放入正式参考图：
 
-## 请你做的
+- `ip-reference.png`（用户原图，**唯一身份源**）
+- `ip-reference.jpg`（同图 JPEG）
+- `ip-reference-alt-clean.jpg`（同身份的洁净白底备选，非第二身份）
+- `ip-reference-v1-try.jpg`（早期试做，已弃用，勿当参考）
 
-1. 放入一张清晰的角色参考图。
-2. 命名为 **`ip-reference.jpg`** 或 **`ip-reference.png`**。
-3. 同步检查 / 更新同目录 `ip-character.md`，使文案与图一致。
-
-## skill 行为
-
-- [`ai-longform-illustrations`](../../ai-longform-illustrations/) 若只检测到本占位文件、没有 jpg/png → **先停止生图**，请用户补图（或说明可用占位文字）。
-- 仅当用户**明确说**「先用纯文字描述试跑」时，才可按 `ip-character.md` 无参考图试跑，并警告：**一致性差，正式发布前应补参考图重跑**。
-- 有正式参考图后，可删除本占位文件。
+生图时只传 `ip-reference.png` 或 `.jpg` 一张，不要多图混传。

@@ -8,12 +8,12 @@ This repository is a **multi-agent skill library**, not an application.
 - Each skill is a folder with required `SKILL.md` (YAML frontmatter `name` + `description`, then Markdown body).
 - Optional siblings: `scripts/`, `references/`, `assets/`.
 - Shared writing refs live in `skills/_shared/references/` (Jina fetch, voice-profile, unslop).
-- Shared IP assets for longform illustrations live in `skills/_shared/ip-assets/` (reference image + character sheet).
+- Shared IP **seed** assets live in `skills/_shared/ip-assets/`. Runtime character packs and illustrations live in project-local `.content-ip-assets/` (gitignored). Workflow structure inspired by Punk IP Illustrations; do not vend their built-in character or commercial license text here.
 - Do **not** put personal accounts, API keys, or one-off paths in shared recipes.
 
 ## Writing pipeline (v1)
 
-Four content skills share a dual-entry flow: **with URL → Jina-only fetch** (`fetch-jina.md`); **without URL → 3–5 topic options then write**. Apply `voice-profile.md` before unslop. Do not add a second extractor in this phase. Longform optional body illustrations: after draft, run `ai-longform-illustrations` (cover stays with the writing skill).
+Four content skills share a dual-entry flow: **with URL → Jina-only fetch** (`fetch-jina.md`); **without URL → 3–5 topic options then write**. Apply `voice-profile.md` before unslop. Do not add a second extractor in this phase. Longform optional body illustrations: after draft, run `ai-longform-illustrations` (requires a `confirmed` character in `.content-ip-assets/`; otherwise create → draft → explicit confirm first). Cover stays with the writing skill.
 
 ## Adapter roots (do not fork content)
 

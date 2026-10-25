@@ -10,9 +10,10 @@ skills/                 # canonical skills (edit here)
   ai-twitter-longform/  # X long-form + cover image
   ai-xiaohongshu/
   ai-wechat-article/
-  ai-longform-illustrations/  # 长文正文配图（固定 IP）
+  ai-longform-illustrations/  # 长文正文配图（参考图建角确认→配图；画风来自用户参考）
   _shared/references/   # Jina 拉取、voice-profile、去 AI 味
-  _shared/ip-assets/    # IP 参考图 + 身份锚点
+  _shared/ip-assets/    # IP 种子模板（运行时用 .content-ip-assets/）
+.content-ip-assets/     # 本地角色包 + 插图（gitignore；勿提交）
   _template/
 .agents/skills/         # adapters → skills/*
 .claude/skills/
@@ -33,7 +34,7 @@ AGENTS.md
 | [ai-twitter-longform](./skills/ai-twitter-longform/) | X 长文 | 链接或 brief → 推特长文，**必须带封面图/封面 brief** |
 | [ai-xiaohongshu](./skills/ai-xiaohongshu/) | 小红书 | 链接或 brief → 小红书笔记 |
 | [ai-wechat-article](./skills/ai-wechat-article/) | 公众号 | 链接或 brief → 公众号中长文 |
-| [ai-longform-illustrations](./skills/ai-longform-illustrations/) | 配图 | 长文正文配图（固定个人 IP；先锚点再逐张生图） |
+| [ai-longform-illustrations](./skills/ai-longform-illustrations/) | 配图 | 参考图建角确认 → 长文正文配图（固定 IP；画风来自用户参考，非 Punk 预设；流程结构灵感来自 Punk IP Illustrations） |
 
 ## Quick start
 
@@ -63,7 +64,7 @@ Keep recipes generic. Personal accounts and secrets belong in agent config, not 
 
 - **Jina-only**：本阶段只用 [`fetch-jina.md`](./skills/_shared/references/fetch-jina.md)（`https://r.jina.ai/{原文完整url}`）；失败则请用户粘贴正文或换链，禁止臆造。后续可扩展其他抽取器，步骤里不实现。
 - **个人 IP**：交稿前对照 [`voice-profile.md`](./skills/_shared/references/voice-profile.md)；可复制模板见 [`voice-profile.template.md`](./skills/_shared/references/voice-profile.template.md)。平台 skill 只写形态，语气以 IP 为准。
-- **长文可选配图**：`ai-wechat-article` / `ai-twitter-longform` 正文定稿后，可续跑 [`ai-longform-illustrations`](./skills/ai-longform-illustrations/)（固定 IP 参考图 + 认知锚点 + 逐张生成）；与封面步骤分开。IP 资产见 [`_shared/ip-assets/`](./skills/_shared/ip-assets/)。
+- **长文可选配图**：`ai-wechat-article` / `ai-twitter-longform` 正文定稿后，可续跑 [`ai-longform-illustrations`](./skills/ai-longform-illustrations/)（参考图或种子 + 角色名 → 创建/确认角色 → 按篇幅自动定张数 → 流程拆解或核心动作 → 逐张 16:9）；画风由用户参考图锁定为自由文本 `style`，**不问** Punk 的两种预设画风。与封面步骤分开。运行资产在 `.content-ip-assets/`；[`_shared/ip-assets/`](./skills/_shared/ip-assets/) 仅为可选种子。工作流结构灵感来自 [Punk IP Illustrations](https://github.com/adrianpunk/punk-ip-illustrations)（仅流程：确认门、角色包、自动张数；不含其画风预设；其 skill 的商业使用受对方许可约束，本仓库 skill 为原创表述，不内嵌对方角色或许可全文）。
 
 ## 中文去 AI 味
 

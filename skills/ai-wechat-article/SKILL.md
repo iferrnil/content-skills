@@ -41,7 +41,11 @@ description: 当用户给出网页链接或素材/brief，要求写成微信公�
 
 写完结构后做一遍**长文档**节奏检查（句长起伏、连词堆砌、小标题口号化；见 unslop-zh.md 长文档与 sepia-zh-longform.md）。少黑话，缩写首次人话解释。
 
-正文定稿后若用户要配图 → 调用/遵循 [`ai-longform-illustrations`](../ai-longform-illustrations/)；封面图（若有）仍由写作流程自己的封面步骤负责，**正文配图与封面分开**。
+正文定稿后若用户要配图 → 调用/遵循 [`ai-longform-illustrations`](../ai-longform-illustrations/)：
+
+1. 若 `.content-ip-assets/` 已有 **confirmed** 当前角色 → 直接进入文章配图
+2. 若无 confirmed 角色 → **先**选画风 → 创建 IP（draft）→ **等用户明确确认**，再配图；禁止用 draft 出文插图
+3. 封面图（若有）仍由写作流程自己的封面步骤负责，**正文配图与封面分开**
 
 ## 交付
 
@@ -49,7 +53,7 @@ description: 当用户给出网页链接或素材/brief，要求写成微信公�
 2. 2–3 个备选标题
 3. 依据来源（模式 A）；模式 B 标明「基于 brief，非转载」+ 所选选题与备选
 4. 推断单独标明
-5. （可选）需要正文配图时，接着跑 [`ai-longform-illustrations`](../ai-longform-illustrations/)（或用户说配图时自动续跑）
+5. （可选）用户要正文配图时续跑 [`ai-longform-illustrations`](../ai-longform-illustrations/)；无 confirmed 角色则先走创建/确认流
 
 ## 不做
 

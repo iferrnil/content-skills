@@ -3,3 +3,6 @@ content-cache/
 *.tar.gz
 .env
 .env.*
+
+# Runtime IP packs + article illustrations (local only)
+.content-ip-assets/

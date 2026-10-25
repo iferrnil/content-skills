@@ -1,110 +1,130 @@
 ---
 name: ai-longform-illustrations
-description: 当用户要为公众号或推特长文生成带固定个人 IP 的正文配图时使用；先抽认知锚点再逐张生图。不要用于短帖封面 alone、也不替代写作 skill。
+description: 当用户要为公众号或推特长文生成带固定个人 IP 的正文配图时使用；先抽认知锚点再逐张生图。不要用于短帖封面 alone、也不替代写作 skill。也适用于：从照片/参考图创建 IP、确认角色、切换多角色、流程拆解图与核心动作图。画风由用户参考图/角色规范锁定，不提供第三方预设画风选项。
 ---
 
 # 长文正文配图（固定个人 IP）
 
-为已定稿或已有大纲的公众号 / 推特长文，生成带**同一固定个人 IP** 的 16:9 正文配图。封面图仍由写作 skill（如 `ai-twitter-longform`）负责；本 skill 只做正文插图。
+为已定稿的公众号 / 推特长文，生成带**同一固定个人 IP** 的 16:9 正文配图。封面由写作 skill 负责；本 skill 只做正文插图与角色生命周期。
 
-参考思路：固定 IP 参考图 + 认知锚点 + 逐张生成 + QA（见开源 personal-ip-illustrations）。
+工作流结构灵感来自开源 [Punk IP Illustrations](https://github.com/adrianpunk/punk-ip-illustrations)（**仅流程**：确认门、角色包、按篇幅自动定张数；**不含**其内置画风预设、角色、品牌文案或商业许可文本）。本仓库 skill 为原创表述；运行资产保存在本地 `.content-ip-assets/`。
 
-## 何时用
+## 画风（来自用户参考，绑定到角色）
 
-- 用户说「配图」「正文插图」「个人 IP 配图」「shot list」
-- `ai-wechat-article` / `ai-twitter-longform` 正文定稿后，用户要配图或交付清单触发续跑
+**不要**询问或强制任何第三方预设画风（例如 loose-line-flat / retro-flat-3d、水彩 / 3D 二选一）。画风只来自用户自己的参考图与 `character-spec`。
+
+- 首次建角或未指定角色时，**只问参考图（或种子）+ 角色名**，不问画风 A/B
+- 从参考图提炼可观察的视觉语言，写入 `character.json`：
+  - `style`：自由文本描述（如 `flat-cute-line`、`soft watercolor with thin ink`），说明**该用户**的样子
+  - 可选 `style_id: "custom"`（标明非预设枚举）
+- 同一角色后续配图一律沿用该 `style` + clean reference + `character-spec.md`；不要在一张图里混入无关视觉语言
+- 已确认角色要改画风/外观 → 按「修订角色」重出设定卡 + 干净参考图，再等确认；禁止只改 manifest 字段
+
+## 运行资产目录
+
+优先项目根：
+
+```text
+.content-ip-assets/
+├── current-character.json
+├── characters/<slug>/
+│   ├── character.json          # name, style (free-text), style_id?, status: draft|confirmed
+│   ├── character-sheet.png
+│   ├── character-reference-clean.png
+│   └── character-spec.md
+└── illustrations/<article-slug>/
+```
+
+无项目可写目录时回退 `~/.content-ip-assets/`。用户指定目录时从其指定。
+
+**不要**把用户照片、草稿角色或插图提交进 Git。仓库内 `skills/_shared/ip-assets/` 仅作**种子/默认模板**（可选导入），正式真相是角色包内文件。
+
+详见 [`references/character-lifecycle.md`](references/character-lifecycle.md)。
+
+## 每次开始时
+
+1. 读 [`references/character-lifecycle.md`](references/character-lifecycle.md)，解析运行目录、当前角色、`status` 与 `style`
+2. 本轮未指定角色、且是入口 → 先「请上传参考图（或同意用种子）+ 角色名」；**不要**问第三方画风选项，也不要同时索要文章
+3. 按阶段路由，只读当前阶段需要的参考文件
+
+## 阶段路由
+
+| 情况 | 进入 |
+| --- | --- |
+| 只调用本 skill，未指定角色 | 首次引导（参考图或种子 + 角色名） |
+| 无照片/文章、无已确认角色 | 首次引导（参考图或种子 + 角色名） |
+| 上传照片或已有参考图，要求创建 IP | 创建个人角色 → `draft` → **必须等明确确认** |
+| 用户说「确认」「就用这个」「定稿」 | 确认角色 → `confirmed` |
+| `draft` 角色要改外观 | 修订角色（新版本，仍 `draft`） |
+| 提供文章/观点/链接，且有 `confirmed` 角色 | 文章配图 |
+| 列出 / 切换角色 | 角色管理（仅 `confirmed` 可激活） |
+| 同时给照片+文章，但无确认角色 | **先建角并停在确认**；不提前配图 |
+| 无确认角色却要配图 | 先创建/确认角色（参考图 + 角色名）；禁止用 draft 生文插图 |
+
+## 创建个人角色（→ draft）
+
+完整读 [`references/character-lifecycle.md`](references/character-lifecycle.md)。
+
+1. 输入为**人物照片**或**已有 IP 参考图**（唯一身份与画风源）+ 角色名称/昵称
+2. 提炼可观察特征（脸型、发型、五官、肤色、年龄感、体型、固定服装、配件、气质）以及参考图本身的线稿/上色/材质等视觉语言；不推断敏感属性
+3. 将画风写成自由文本 `style`（必要时加 `style_id: "custom"`），写入 manifest 与 `character-spec.md`
+4. 生成**角色设定图（多视图）**：布局跟随参考图的视觉语言（常见：横向正面 / 侧面 / 背面 / 3/4 / 自然动作；若参考本身是竖版设定板则沿用竖版主全身 + 多角度）——**不要**套用第三方预设布局名
+5. 再生成**干净单人物全身参考图**（纯白或透明底；无设定板标题、边框、多视图）
+6. 写出 `character-spec.md`
+7. 写入 `.content-ip-assets/characters/<slug>/`，`status: draft`；更新不自动激活
+8. 展示设定板 + 干净参考图 + 路径 + 提炼的 `style` 文案，**只问确认还是修改**
+
+种子导入：若用户同意用 `skills/_shared/ip-assets/` 里现有参考图作起点，可据此生成设定卡与干净参考，`style` 仍从该种子图提炼，仍进 `draft`，仍须确认。
+
+## 确认角色
+
+- 仅用户**明确**确认时执行（「看起来不错」不够）
+- 检查 sheet / clean reference / spec 均存在
+- `status` → `confirmed`；写入 `current-character.json`
+- 此后文章配图以角色包 `character-spec.md` + `character-reference-clean.png` + manifest `style` 为**活真相**；`skills/_shared/ip-assets/ip-character.md` 仅为种子说明
+
+## 文章配图（仅 confirmed）
+
+完整读：
+
+- [`references/illustration-modes.md`](references/illustration-modes.md)（张数表 + 流程拆解 / 核心动作）
+- [`references/prompt-template.md`](references/prompt-template.md)（按角色 `style` + character-spec + clean reference 填模板）
+- [`references/qa-checklist.md`](references/qa-checklist.md)
+- 当前角色包 `character-spec.md`
+
+执行：
+
+1. 解析当前或指定角色；**拒绝 draft**
+2. **读完整文章**（本地文件读全文；链接用写作侧同一套拉取；缺正文则停止，不凭标题臆测）
+3. 按字数表自动定张数（用户指定优先）；每张不同认知锚点
+4. 每张选模式：**流程拆解** 或 **核心动作**；**开画前输出 shot list 表**（见 illustration-modes.md：序号/slug/锚点/模式/插入位），用户未叫停则继续
+5. 默认只传**干净单人物参考图**；需侧面/背面时才加设定板（并声明只提供身份角度）。**硬锚点必须写入每张提示词**（从 character-spec 抄）；正文插图遵循 spec 的服装策略（如默认无高开叉）
+6. **逐张** 16:9 生成（同一 clean reference + 同一 `style` 描述）；不拼成一张大图。**默认全身**（头到脚含鞋入镜）；提示词写死 `FULL BODY head-to-toes, shoes visible`；仅用户明确要求半身/特写时才改景别
+7. 每张过 QA；不合格优先重生成该张（同图最多针对性重试 2 次）
+8. 保存到 `.content-ip-assets/illustrations/<article-slug>/01-<slug>.png`（已存在用 `-v2`）；报告用途、绝对路径、建议插入位置
+9. 默认不改原文；用户明确要求「写入 Markdown」且文件可写时，先备份再插入图片引用
+
+禁止：无确认角色 / 无 clean reference 文件却声称已出图；无文件却写「已生成」。
+
+## 角色管理
+
+- 列出：扫描 `.content-ip-assets/characters/*/character.json`
+- 切换 / 激活：仅 `confirmed`；更新 `current-character.json`
+- 查看当前：读 `current-character.json` → 对应 manifest
+
+## 与写作 skill 的衔接
+
+`ai-wechat-article` / `ai-twitter-longform` 正文定稿后，若用户要正文配图：
+
+1. 有 `confirmed` 当前角色 → 直接进入本文「文章配图」
+2. 无 → 参考图（或种子）+ 角色名 → 创建 → **等确认**，再配图（不问第三方画风选项）
+3. 封面仍由写作 skill 负责，与正文配图分开
 
 ## 不做
 
-- 不替代写作 skill（不写正文）
-- 不只做短帖封面 alone（封面走 longform 自己的封面步骤）
-- 不臆造「已生成」却无文件
-
-## 默认画风（可被 `ip-character.md` 覆盖）
-
-- 16:9、白底或浅底
-- 手绘 / 轻线稿感；角色少量上色
-- 少字标注（每张 2–5 处中文）
-- 每张只讲一个认知锚点
-- 不像 PPT / 海报 / 商业 KV
-
-## 步骤
-
-### 1. 确认正文或大纲
-
-已有正文或大纲即可（可来自刚写完的 `ai-wechat-article` / `ai-twitter-longform`）。没有则请用户粘贴，或先跑对应写作 skill。
-
-### 2. 读 IP 资产
-
-路径相对本仓库 `skills/`：
-
-| 文件 | 用途 |
-| --- | --- |
-| [`../_shared/ip-assets/ip-reference.jpg`](../_shared/ip-assets/ip-reference.jpg)（或 `.png`） | **唯一**角色参考图 |
-| [`../_shared/ip-assets/ip-character.md`](../_shared/ip-assets/ip-character.md) | 身份锚点 / 可变项 / 禁止项 / 画风 |
-
-**无参考图时的停止行为：**
-
-1. 若目录里只有 [`ip-reference.PLACEHOLDER.md`](../_shared/ip-assets/ip-reference.PLACEHOLDER.md)、没有 `ip-reference.jpg` / `ip-reference.png` → **停止生图**，请用户把正式参考图放入并命名为上述文件名；或说明可用占位文字描述（见下）。
-2. 仅当用户**明确说**「先用纯文字描述试跑」时，才可无参考图试跑；必须在交付中**警告：无参考图一致性差，正式发布前应补图重跑**。
-3. 禁止在未生成文件的情况下声称「已出图」。
-
-### 3. 提取认知锚点 → shot list
-
-从正文抽出 **4–8 个**认知锚点（卡点 / 分流 / 对比 / 流程 / 取舍等）；短内容 **1–3 个**。每张只讲一个锚点。
-
-输出 shot list（表格或列表），每行：
-
-| 锚点名 | 对应段落 | 隐喻动作 | 画面一句 |
-| --- | --- | --- | --- |
-| … | 小节标题或段落后 | IP 亲自做的解释动作 | 构图/物件一句话 |
-
-优先让主角亲手完成动作；若去掉主角隐喻仍成立，则重构，让他成为推动 / 搬运 / 判断 / 连接的一部分。
-
-可选：按 [`references/prompt-template.md`](references/prompt-template.md) 为每张填好提示词变量。
-
-### 4. 逐张生成（默认 16:9）
-
-- **一张一张生成**，不要拼成一张大图。
-- 每张必须带上**同一张**参考图（宿主若支持 `GenerateImage` / `referenced_image_paths` 等则传入）。
-- 提示词只写**场景 / 动作 / 物件变化**；不重写整套长相（长相以参考图 + `ip-character.md` 为准）。
-- 若当前环境**不能传参考图**：仍输出完整 prompt，并说明「请用支持参考图的工具生成」，写清参考图路径；不要假装已生成。
-- 建议保存路径：
-
-```text
-/workspace/content-cache/illustrations/<article-slug>/01-<anchor-slug>.png
-02-<anchor-slug>.png
-…
-```
-
-不覆盖已有文件，除非用户明确要求。
-
-### 5. QA（每张过一遍）
-
-1. **一眼是否同一 IP**（发型、眼镜、气质与参考图一致）
-2. **主角是否在做解释观点的动作**（不是角落卖萌贴纸）
-3. **是否像 PPT / 海报** → 不合格，重生成或简化
-4. **中文标注若有错字** → 减少文字，或标「待修」后改
-
-不合格优先重生成该张，不要硬修成另一人物。
-
-### 6. 交付
-
-1. **shot list**（锚点名 | 对应段落 | 隐喻动作 | 画面一句）
-2. **各图文件路径**（或「待用参考图工具生成」+ 完整 prompt + 参考图路径）
-3. **建议插入正文的位置**（通常：对应小节标题后）
-4. 若无参考图试跑：醒目警告一致性风险
-
-## 与封面的边界
-
-| | 封面 | 正文配图（本 skill） |
-| --- | --- | --- |
-| 负责方 | `ai-twitter-longform` 等写作 skill | `ai-longform-illustrations` |
-| 目的 | 头图 / 吸引点击 | 解释观点、锚住一节 |
-| IP | 可选 | **固定同一 IP 参考图** |
-
-## 约束
-
-- 不擅自改 IP 性别、年龄感、发色、眼镜等身份锚点
-- 不把全文塞进图里；不做复杂架构图、真实 UI 截图、可编辑 SVG
-- 个人正式设定与参考图由用户放入 `_shared/ip-assets/`，不把私密账号写进本 recipe
+- 不替代写作 skill
+- 不只做短帖封面 alone
+- 不用 draft 角色配文章
+- 不嵌入或要求第三方 skill 的商业许可文本
+- 不把本仓库 skill 文案与第三方内置角色资产混用
+- **不**向用户提供或强制第三方预设画风二选一（含 loose-line-flat / retro-flat-3d、水彩 / 3D 等）
